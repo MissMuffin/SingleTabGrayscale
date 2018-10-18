@@ -2,7 +2,7 @@ browser.runtime.onMessage.addListener(request => {
 
     var body = document.body;
 
-    if(request.state == 1) {
+    if(request.isGrayscale) {
         if (!body.style['filter']){
             body.style['filter']='grayscale(100)';
             body.style['-webkit-filter']='grayscale(100)';
