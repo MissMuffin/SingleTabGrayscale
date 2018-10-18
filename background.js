@@ -2,7 +2,7 @@ var state = 0;
 //0 means all tabs are in original color.
 //1 means all tabs turn to black-white color
 
-function changeToGray(tabId) {
+function toggleGrayscale(tabId) {
     //Sends the current state to the tab having the provided tabID.
     browser.tabs.sendMessage(
         tabId,
@@ -20,28 +20,23 @@ function click() {
         // https://stackoverflow.com/questions/49463077/can-browser-tabs-queryactive-true-currentwindow-true-ever-return-more-tha
         let tab = tabs[0];
         if (tab) {
-            
-            browser.tabs.sendMessage(
-                tab.id,
-                {state: state}
-            ).then(response => {
-                console.log('Tab ' + tabId + ' ' + response.info);
-            });
-
+            toggleGrayscale(tab.id);
         } else {
             console.log('more than one active tab');
         }
     });
 }
+browser.browserAction.onClicked.addListener(click);
+
 function handleUpdated(tabId, changeInfo, tabInfo) {
     console.log("Update tab " + tabId);
-    changeToGray(tabId);
+    toggleGrayscale(tabId);
 }
+browser.tabs.onUpdated.addListener(handleUpdated);
+
 function handleAttached(tabId, attachInfo) {
     console.log("Attach tab " + tabId);
-    changeToGray(tabId);
+    toggleGrayscale(tabId);
 }
-
-browser.tabs.onUpdated.addListener(handleUpdated);
 browser.tabs.onAttached.addListener(handleAttached);
-browser.browserAction.onClicked.addListener(click);
+
