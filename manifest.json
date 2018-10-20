@@ -14,9 +14,10 @@
         "activeTab", "tabs"
     ],
     
-    "browser_action": {
-        "default_icon": "icons/border-32.png",
-        "default_title": "Grayscale"
+    "page_action": {
+        "default_icon": "icons/off.svg",
+        "default_title": "Turn on grayscale",
+        "show_matches": ["<all_urls>"]
     },
 
     "background": {

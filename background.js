@@ -1,64 +1,65 @@
-var isGrayscale = false;
+const TURN_ON_GRAYSCALE = "Turn on grayscale";
+const TURN_OFF_GRAYSCALE = "Turn on color";
 
-function toggleGrayscale(tabId) {
+// keep list of a grayed out tabs for persisting state on tab reload
+var grayTabs = [];
+
+function toggleGrayscale(tabId, isGrayscale) {
     //Sends the current state to the tab having the provided tabID.
     browser.tabs.sendMessage(
         tabId,
         { isGrayscale: isGrayscale },
-    ).then(response => {
-        console.log('Tab ' + tabId + ' ' + response.info);
-    });
-}
-
-function click() {
-    // toggle
-    isGrayscale = !isGrayscale;
-
-    //send message to content script to add filter
-    browser.tabs.query({ active: true, currentWindow: true}).then((tabs) => {
-        //should only ever return one tab in chrome and firefox
-        // https://stackoverflow.com/questions/49463077/can-browser-tabs-queryactive-true-currentwindow-true-ever-return-more-tha
-        let tab = tabs[0];
-        if (tab) {
-            toggleGrayscale(tab.id);
-        } else {
-            console.log('more than one active tab');
-        }
-    });
-}
-browser.browserAction.onClicked.addListener(click);
-
-browser.browserAction.setBadgeBackgroundColor({color: "red"});
-browser.browserAction.onClicked.addListener((tab)=> {
-    console.log("change color");
-    browser.browserAction.setBadgeBackgroundColor({
-      color: "green",
-      tabId: tab.id
-    });
-  });
-
-//onRemoved listener. fired when tab is removed
-browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
-    console.log(`The tab with id: ${tabId}, is closing`);
-  
-    if(removeInfo.isWindowClosing) {
-      console.log(`Its window is also closing.`);
-    } else {
-      console.log(`Its window is not closing`);
+        ).then(response => {
+            console.log('Tab ' + tabId + ' ' + response.info);
+            console.log(grayTabs);
+        });
     }
 
-    state = 0;
-});
+    function turnOn(id) {
+        browser.pageAction.setIcon({tabId: id, path: "icons/on.svg"});
+        browser.pageAction.setTitle({tabId: id, title: TURN_OFF_GRAYSCALE});
+        grayTabs.push(id);
+    }
+        
+    function turnOff(id) {
+        browser.pageAction.setIcon({tabId: id, path: "icons/off.svg"});
+        browser.pageAction.setTitle({tabId: id, title: TURN_ON_GRAYSCALE});
+        grayTabs.pop(grayTabs.indexOf(id));
+    }
+    
+function click(tab) {
 
-function handleUpdated(tabId, changeInfo, tabInfo) {
+    // persist tab state by using the browser action title as status
+    function gotTitle(title) {
+        let isGrayscale = (title === TURN_OFF_GRAYSCALE)
+        let id = tab.id;
+        if (isGrayscale) {
+            turnOff(id);
+        } else {
+            turnOn(id);
+        }
+        toggleGrayscale(tab.id, isGrayscale);
+    }
+    var gettingTitle = browser.pageAction.getTitle({tabId: tab.id});
+    gettingTitle.then(gotTitle);
+}
+
+browser.pageAction.onClicked.addListener(click);
+
+// ON RELOAD
+function handleUpdated(tabId, changeInfo, tab) {
     console.log("Update tab " + tabId);
-    toggleGrayscale(tabId);
+    if (changeInfo.status == "complete") {
+        console.log("Update tab " + tabId + "--- changeinfo complete");
+        console.log(grayTabs);
+        console.log(grayTabs.indexOf(tabId) != -1);
+        if (grayTabs.indexOf(tabId) != -1) {
+            console.log("Update tab " + tabId + "--- set gray");
+            turnOn(tabId);
+            toggleGrayscale(tabId);
+        }
+    }
 }
-browser.tabs.onUpdated.addListener(handleUpdated);
 
-function handleAttached(tabId, attachInfo) {
-    console.log("Attach tab " + tabId);
-    toggleGrayscale(tabId);
-}
-browser.tabs.onAttached.addListener(handleAttached);
+browser.tabs.onUpdated.addListener(handleUpdated);
 
