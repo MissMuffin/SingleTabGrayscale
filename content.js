@@ -15,7 +15,6 @@ browser.runtime.onMessage.addListener(request => {
             body.style['-webkit-filter'] = null;
             body.style['filter'] = 'progid:DXImageTransform.Microsoft.BasicImage(grayscale=0)';
         }
-        return Promise.resolve({ info: "Turned on color" });
+        return Promise.resolve({ info: "Turned off grayscale" });
     }
-
 });

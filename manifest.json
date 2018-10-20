@@ -17,7 +17,8 @@
     "page_action": {
         "default_icon": "icons/off.svg",
         "default_title": "Turn on grayscale",
-        "show_matches": ["<all_urls>"]
+        "show_matches": ["<all_urls>"],
+        "browser_style": true
     },
 
     "background": {

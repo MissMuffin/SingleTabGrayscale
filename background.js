@@ -10,8 +10,7 @@ function toggleGrayscale(tabId, isGrayscale) {
         tabId,
         { isGrayscale: isGrayscale },
         ).then(response => {
-            console.log('Tab ' + tabId + ' ' + response.info);
-            console.log(grayTabs);
+            // console.log('Tab ' + tabId + ' ' + response.info);
         });
     }
 
@@ -48,18 +47,12 @@ browser.pageAction.onClicked.addListener(click);
 
 // ON RELOAD
 function handleUpdated(tabId, changeInfo, tab) {
-    console.log("Update tab " + tabId);
     if (changeInfo.status == "complete") {
-        console.log("Update tab " + tabId + "--- changeinfo complete");
-        console.log(grayTabs);
-        console.log(grayTabs.indexOf(tabId) != -1);
         if (grayTabs.indexOf(tabId) != -1) {
-            console.log("Update tab " + tabId + "--- set gray");
             turnOn(tabId);
             toggleGrayscale(tabId);
         }
     }
 }
-
 browser.tabs.onUpdated.addListener(handleUpdated);
 
